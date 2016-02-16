@@ -1,4 +1,21 @@
 div
+
+  .row
+    .col-sm-6
+      input.form-control(type='text', ng-model='vm.test',
+        input-composition='',
+        uib-typeahead='address for address in vm.getLocation($viewValue)',
+        typeahead-loading="loadingLocations",
+        typeahead-no-results="noResults")
+      input.form-control(type='text', ng-model='vm.dest',
+        ng-model-options='{ debounce: 500 }',
+        input-composition='',
+        uib-typeahead='address for address in vm.getLocation($viewValue)',
+        typeahead-loading="loadingLocations",
+
+        typeahead-no-results="noResults")
+
+      //- pre {{ vm | json }}
   naver-map
   //- h1.title(translate='') COMMON.TERM.PROJECT_NAME
   //- scp-markdown-content(markdown-options='vm.markdownOptions')
