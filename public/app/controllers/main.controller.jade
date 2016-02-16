@@ -4,13 +4,13 @@ div
     .col-sm-6
       input.form-control(type='text', ng-model='vm.test',
         input-composition='',
-        uib-typeahead='address for address in vm.getLocation($viewValue)',
+        uib-typeahead='name for name in vm.typeahead($viewValue)',
         typeahead-loading="loadingLocations",
         typeahead-no-results="noResults")
       input.form-control(type='text', ng-model='vm.dest',
         ng-model-options='{ debounce: 500 }',
         input-composition='',
-        uib-typeahead='address for address in vm.getLocation($viewValue)',
+        uib-typeahead='name for name in vm.typeahead($viewValue)',
         typeahead-loading="loadingLocations",
 
         typeahead-no-results="noResults")
