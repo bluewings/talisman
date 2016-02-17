@@ -141,6 +141,32 @@ angular.module 'scomp'
         return
       return
 
+  getLatLng = (innerStr) ->
+    chunk = innerStr.split ','
+    latlng = nhn.mapcore.CoordConverter.fromInnerToLatLng(new nhn.api.map.Inner(chunk[0], chunk[1]))
+    x: latlng.x, y: latlng.y
+
+  $scope.$watch 'vm.route', (route) ->
+    if route and route.summary
+
+      tl = getLatLng route.summary.bounds.left_top
+      br = getLatLng route.summary.bounds.right_bottom
+      # center = [(tl.x + br.x) / 2, (tl.y + br.y) / 2]
+
+      vm.nmapOptions =
+        center:
+          x: (tl.x + br.x) / 2, y: (tl.y + br.y) / 2
+        route:
+          from: getLatLng route.summary.start.location
+          to: getLatLng route.summary.end.location
+        paths: route.paths
+      # console.log center
+      # nhn.mapcore.CoordConverter.fromInnerToLatLng(new nhn.api.map.Inner(chunk[0], chunk[1]))
+
+
+      console.log route.summary
+    return
+
   $scope.$watch 'vm.input.from._edit', (edit) ->
     if edit
       $timeout ->
@@ -155,7 +181,7 @@ angular.module 'scomp'
         return
     return
 
-  vm.input.onselect 'from', '일월초등학교'
+  vm.input.onselect 'from', '수지구청'
   vm.input.onselect 'to', '그린팩토리'
 
   $timeout ->
