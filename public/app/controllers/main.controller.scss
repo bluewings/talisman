@@ -1,0 +1,39 @@
+.form-group {
+    padding: 1px 0;
+    margin-bottom: 10px;
+}
+
+.btn {
+    border-top-width: 1px;
+    overflow: hidden;
+
+    &.btn-left {
+        text-align: left;
+    }
+
+    &.btn-lg {
+        font-size: 14px;
+
+        i.fa {
+            margin-right: 5px;
+        }
+    }
+}
+
+.panel {
+    border-top-width: 1px;
+    margin-bottom: 14px;
+
+    hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    &.panel-selected {
+        border-color: #23a127;
+
+        hr {
+            border-top-color: #23a127;
+        }
+    }
+}

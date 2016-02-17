@@ -1,22 +1,54 @@
 div
-
+  br
   .row
-    .col-sm-6
-      input.form-control(type='text', ng-model='vm.test',
-        input-composition='',
-        uib-typeahead='name for name in vm.typeahead($viewValue)',
-        typeahead-loading="loadingLocations",
-        typeahead-no-results="noResults")
-      input.form-control(type='text', ng-model='vm.dest',
-        ng-model-options='{ debounce: 500 }',
-        input-composition='',
-        uib-typeahead='name for name in vm.typeahead($viewValue)',
-        typeahead-loading="loadingLocations",
+    .col-sm-3
+      .form-group.form-from
+        button.btn.btn-block.btn-default.btn-left(ng-if='!vm.input.from._edit', ng-click='vm.input.edit("from")')
+          div(ng-if='vm.input.from.selected')
+            .pull-right
+              i.fa.fa-check
+            div {{ vm.input.from.selected.name }}
+            small {{ vm.input.from.selected.address }}
+          div(ng-if='!vm.input.from.selected') 출발지를 입력하세요.
 
-        typeahead-no-results="noResults")
+        div(ng-if='vm.input.from._edit')
+          input.form-control(type='text',
+            ng-model='vm.input.from.text', ng-model-options='{ debounce: 300 }',
+            ng-blur='vm.input.edit("from", false)',
+            uib-typeahead='name for name in vm.input.query($viewValue)',
+            typeahead-on-select='vm.input.onselect("from", $item)',
+            input-composition='')
 
-      //- pre {{ vm | json }}
-  naver-map
-  //- h1.title(translate='') COMMON.TERM.PROJECT_NAME
-  //- scp-markdown-content(markdown-options='vm.markdownOptions')
+      .form-group.form-to
+        button.btn.btn-block.btn-default.btn-left(ng-if='!vm.input.to._edit', ng-click='vm.input.edit("to")')
+          div(ng-if='vm.input.to.selected')
+            .pull-right
+              i.fa.fa-check
+            div {{ vm.input.to.selected.name }}
+            small {{ vm.input.to.selected.address }}
+          div(ng-if='!vm.input.to.selected') 목적지를 입력하세요.
 
+        div(ng-if='vm.input.to._edit')
+          input.form-control(type='text',
+            ng-model='vm.input.to.text', ng-model-options='{ debounce: 300 }',
+            ng-blur='vm.input.edit("to", false)',
+            uib-typeahead='name for name in vm.input.query($viewValue)',
+            typeahead-on-select='vm.input.onselect("to", $item)',
+            input-composition='')
+
+      .form-group
+        button.btn.btn-block.btn-success.btn-lg(ng-click='vm.findCarRoute()',
+          ng-disabled='!vm.input.from.selected || !vm.input.to.selected')
+          i.fa.fa-fw.fa-car
+          span 길찾기
+
+      .panel(ng-repeat='route in vm.routes',
+        ng-class='{ "panel-selected": vm.route === route }',
+        ng-click='vm.selectRoute(route)')
+        .panel-heading
+          span 약 {{ route.summary.duration | duration }}, 총 {{ route.summary.distance / 1000 | number : 2 }}km
+          hr
+          small {{ route.summary.road_summary | roadSummary }}
+
+    .col-sm-9
+      //- naver-map

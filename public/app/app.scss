@@ -17,6 +17,10 @@ $background-color: #28b62c;
 $border-color: #23a127;
 
 // injector
+.hv4n6x3 {
+    @import "controllers/main.controller.scss";
+}
+
 .fmx1zaw {
     @import "controllers/wrap.controller.scss";
 }
