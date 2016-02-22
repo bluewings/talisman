@@ -12,8 +12,8 @@ angular.module 'scomp'
   controller: ($scope, $element, $http, apiSpec) ->
     vm = @
 
-    width = 800
-    height = 600
+    width = 2000
+    height = 2000
 
     canvas = $element.find('canvas')[0]
     ctx = canvas.getContext('2d')
@@ -30,19 +30,87 @@ angular.module 'scomp'
     centerPoint = new nhn.api.map.LatLng()
 
     nmap = new nhn.api.map.Map(nmapContainer, {
-      zoom: 12
+      zoom: 13
+      mapMode: 0
     })
 
-    interval = setInterval ->
+    prev = null
+
+    $nmap = $(nmapContainer).find('.nmap')
+    # $nmap.css 'transition', '1s transform'
+
+    animateFn = ->
 
       if vm._nmapOptions and vm._nmapOptions.paths and vm._nmapOptions.paths.length > 0
         path = vm._nmapOptions.paths.shift()
+
+        vm._nmapOptions.paths.push path
         
         centerPoint.x = path[0]
         centerPoint.y = path[1]
 
-        nmap.setCenter centerPoint 
-    , 100
+        # $(nmapContainer).find('.nmap').css('overflow', 'visible')
+
+
+
+
+
+        if prev and prev.x is centerPoint.x and prev.y is centerPoint.y
+          # console.log prev.x, centerPoint.x, prev.y, centerPoint.y
+          console.log 'skip'
+        else 
+          if prev
+            console.log centerPoint.x - prev.x, centerPoint.y - prev.y
+
+            vm.angleDeg = Math.atan2(centerPoint.y - prev.y, centerPoint.x - prev.x) * 180 / Math.PI - 90
+
+            $nmap.css
+              transform: "rotate(#{vm.angleDeg}deg)"
+            console.log vm.angleDeg
+          # nmap.setCenter centerPoint, useEffect: true
+          nmap.setCenter centerPoint, { useEffect: false, centerMark: true }
+          # nmap.setCenterBy 1, 1
+
+
+
+        prev =
+          x: centerPoint.x
+          y: centerPoint.y
+
+
+
+
+        # setTimeout ->
+        #   $(nmapContainer).find('img').not('.done').addClass('done newbie').each (index, item) ->
+        #     do (item) ->
+        #       setTimeout ->
+        #         $(item).removeClass('newbie')
+        #       , 1000
+        #     return
+        # , 100
+        # curr = nhn.mapcore.CoordConverter.fromLatLngToInner(centerPoint)
+        # level = nmap.getLevel()
+
+
+        # unless prev
+
+        #   nmap.setCenter centerPoint 
+
+        # else
+        #   console.log curr, curr.x - prev.x, curr.y - prev.y, level
+
+          
+        #   nmap.setCenterBy curr.x - prev.x, curr.y - prev.y          
+
+        # prev = curr
+
+        # nmap.setCenterBy
+    
+
+      setTimeout ->
+        requestAnimationFrame animateFn
+      , 200
+    animateFn()
 
     $scope.$on '$destroy', ->
       clearInterval interval

@@ -181,7 +181,7 @@ angular.module 'scomp'
         return
     return
 
-  vm.input.onselect 'from', '수지구청'
+  vm.input.onselect 'from', '일월초등학교'
   vm.input.onselect 'to', '그린팩토리'
 
   $timeout ->
