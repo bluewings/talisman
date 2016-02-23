@@ -37,3 +37,18 @@
         }
     }
 }
+
+.gmap-wrap {
+    position: relative;
+
+    .car {
+        position: absolute;
+        top: 200px;
+        left: 200px;
+        width: 10px;
+        height: 10px;
+        margin-left: -5px;
+        margin-right: -5px;
+        background-color: blue;
+    }
+}

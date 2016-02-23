@@ -51,8 +51,14 @@ div
           small {{ route.summary.road_summary | roadSummary }}
 
     .col-sm-9
+      //- .nmap-container
+      .gmap-wrap
+        .gmap-container
+        .car
+      canvas
       json-formatter(json='vm.route', open='1')
       json-formatter(json='vm.nmapOptions', open='1')
-      nmap(nmap-options='vm.nmapOptions')
+
+      //- nmap(nmap-options='vm.nmapOptions')
       //- pre {{ vm.route.summary | json }}
       //- naver-map

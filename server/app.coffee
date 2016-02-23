@@ -18,7 +18,7 @@ config = require('./config/environment')
 config =
   root: path.normalize(__dirname + '/..')
   env: process.env.NODE_ENV
-  port: process.env.PORT or 8000
+  port: process.env.PORT or 8010
   ip: process.env.IP or undefined
 
 app = express()
@@ -43,7 +43,7 @@ if 'production' == config.env
 
 if 'development' == config.env or 'test' == config.env
   app.use require('connect-livereload')({
-    port: 35289
+    port: 35299
   })
   app.use morgan('dev')
   app.use favicon(path.join(config.root, 'public', 'favicon.ico'))

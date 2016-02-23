@@ -1,5 +1,41 @@
 'use strict'
 
+
+
+findPoint = (pathGroup, percent) ->
+  currPosition = pathGroup.length * percent
+  lengthFr = 0
+  lengthTo = 0
+  lastX = 0
+  lastY = 0
+  for path, i in pathGroup.paths
+    if path.length
+      lengthTo = lengthFr + path.length
+    if lengthFr < currPosition and currPosition < lengthTo
+      percent = (currPosition - lengthFr) / (lengthTo - lengthFr)
+      break
+    lengthFr = lengthTo
+    lastX = path._x
+    lastY = path._y
+
+  if path.cmd.toUpperCase() is 'C'
+    bezierPoint = bezier(percent,
+      { x: lastX, y: lastY },
+      { x: path._x1, y: path._y1 },
+      { x: path._x2, y: path._y2 },
+      { x: path._x, y: path._y }
+    )
+    point =
+      x: bezierPoint.x
+      y: bezierPoint.y
+      path: path
+  else
+    point =
+      x: lastX + (path._x - lastX) * percent
+      y: lastY + (path._y - lastY) * percent
+      path: path
+  point
+
 angular.module 'scomp'
 .directive 'nmap', ($compile) ->
   restrict: 'E'
@@ -30,7 +66,7 @@ angular.module 'scomp'
     centerPoint = new nhn.api.map.LatLng()
 
     nmap = new nhn.api.map.Map(nmapContainer, {
-      zoom: 13
+      zoom: 11
       mapMode: 0
     })
 
@@ -44,7 +80,9 @@ angular.module 'scomp'
       if vm._nmapOptions and vm._nmapOptions.paths and vm._nmapOptions.paths.length > 0
         path = vm._nmapOptions.paths.shift()
 
-        vm._nmapOptions.paths.push path
+        # vm._nmapOptions.paths.push path
+
+        centerPoint = new nhn.api.map.LatLng()
         
         centerPoint.x = path[0]
         centerPoint.y = path[1]
@@ -60,15 +98,23 @@ angular.module 'scomp'
           console.log 'skip'
         else 
           if prev
-            console.log centerPoint.x - prev.x, centerPoint.y - prev.y
+            # console.log centerPoint.x - prev.x, centerPoint.y - prev.y
 
             vm.angleDeg = Math.atan2(centerPoint.y - prev.y, centerPoint.x - prev.x) * 180 / Math.PI - 90
 
             $nmap.css
               transform: "rotate(#{vm.angleDeg}deg)"
-            console.log vm.angleDeg
+            # console.log vm.angleDeg
           # nmap.setCenter centerPoint, useEffect: true
-          nmap.setCenter centerPoint, { useEffect: false, centerMark: true }
+
+          if prev
+            a = Math.pow(centerPoint.x - prev.x, 2)
+            b = Math.pow(centerPoint.y - prev.y, 2)
+            console.log centerPoint.x, centerPoint.y, Math.sqrt(a + b) * 1000000
+
+
+          if Math.sqrt(a + b) * 1000000 > 100
+            nmap.setCenter centerPoint, { useEffect: false, centerMark: true }
           # nmap.setCenterBy 1, 1
 
 
@@ -109,7 +155,7 @@ angular.module 'scomp'
 
       setTimeout ->
         requestAnimationFrame animateFn
-      , 200
+      , 1000
     animateFn()
 
     $scope.$on '$destroy', ->

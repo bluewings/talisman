@@ -72,6 +72,27 @@ angular.module 'scomp'
     .then (response) ->
       response.data.result.site.list
 
+  # findCarRoute: (from, to) ->
+  #   uri = ['http://map.naver.com/spirra/findCarRoute.nhn']
+  #   uri.push '?route=route3'
+  #   uri.push '&output=json'
+  #   uri.push '&result=web3'
+  #   uri.push '&coord_type=naver'
+  #   uri.push '&search=2'
+  #   uri.push '&car=0'
+  #   uri.push '&mileage=12.4'
+  #   uri.push "&start=#{from.x},#{from.y}," + encodeURIComponent(from.name.replace(/\s+/g, '+'))
+  #   uri.push "&destination=#{to.x},#{to.y}," + encodeURIComponent(to.name.replace(/\s+/g, '+'))
+  #   uri.push '&via='
+
+  #   $http.get '/proxy', 
+  #     params:
+  #       uri: uri.join ''
+  #   .then (response) ->
+  #     routes = response.data.routes
+  #     for route in routes
+  #       route.paths = getPaths route.legs[0].steps
+  #     routes
   findCarRoute: (from, to) ->
     uri = ['http://map.naver.com/spirra/findCarRoute.nhn']
     uri.push '?route=route3'
@@ -90,8 +111,73 @@ angular.module 'scomp'
         uri: uri.join ''
     .then (response) ->
       routes = response.data.routes
+
+      
+
       for route in routes
-        route.paths = getPaths route.legs[0].steps
+        # route.paths = getPaths route.legs[0].steps
+        prev = null
+        accumDist = 0
+        route.paths = []
+        min = null
+        max = null
+
+
+        for point in getPaths route.legs[0].steps
+
+          if point[0] > 0 and point[1] > 0
+            
+
+            if prev
+              x1 = prev[0]
+              y1 = prev[1]
+              x2 = point[0]
+              y2 = point[1]
+              dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+
+              if dist > 0
+
+                # route.paths.push [x1, y1, x2, y2, dist]
+
+                route.paths.push 
+                  sx: x1
+                  sy: y1
+                  ex: x2
+                  ey: y2
+                  dist: dist
+                  start: accumDist
+                  end: accumDist + dist
+
+                accumDist += dist
+                  
+              # else
+              #   console.log [x1, y1, x2, y2, dist]
+
+            if min is null
+              min = x: point[0], y: point[1]
+              max = x: point[0], y: point[1]
+
+            if min.x > point[0]
+              min.x = point[0]
+            if min.y > point[1]
+              min.y = point[1]
+            if max.x < point[0]
+              max.x = point[0]
+            if max.y < point[1]
+              max.y = point[1]
+
+
+
+            prev = point
+
+        # for path in route.paths
+        #   path.push parseInt(path[4] / accumDist * 10000, 10) / 100
+        route.total = accumDist
+        route.min = min
+        route.max = max
+        route.width = route.max.x - route.min.x
+        route.height = route.max.y - route.min.y
+        console.log route.dist
       routes
 
 
@@ -104,6 +190,7 @@ angular.module 'scomp'
       nmapDataApi.findCarRoute vm.input.from.selected, vm.input.to.selected
       .then (routes) ->
         vm.routes = routes
+        vm.selectRoute routes[0]
         console.log routes
         return
     return
@@ -146,25 +233,174 @@ angular.module 'scomp'
     latlng = nhn.mapcore.CoordConverter.fromInnerToLatLng(new nhn.api.map.Inner(chunk[0], chunk[1]))
     x: latlng.x, y: latlng.y
 
+  # $scope.$watch 'vm.route', (route) ->
+  #   if route and route.summary
+
+  #     tl = getLatLng route.summary.bounds.left_top
+  #     br = getLatLng route.summary.bounds.right_bottom
+  #     # center = [(tl.x + br.x) / 2, (tl.y + br.y) / 2]
+
+  #     vm.nmapOptions =
+  #       center:
+  #         x: (tl.x + br.x) / 2, y: (tl.y + br.y) / 2
+  #       route:
+  #         from: getLatLng route.summary.start.location
+  #         to: getLatLng route.summary.end.location
+  #       paths: route.paths
+
+
+  #     console.log route.summary
+  #   return
+
+
+
+  findPoint = (route, percent) ->
+    curr = route.total * percent
+    accum = 0
+    lenFr = 0
+    lenTo = 0
+    lastX = null
+    lastY = null
+
+    # last = null
+    prev = null
+    for path in route.paths
+      if path.start < curr and curr <= path.end
+        # last = path
+        percent = (curr - path.start) / path.dist
+        break
+      # prev = path
+
+    point =
+      x: path.sx + (path.ex - path.sx) * percent
+      y: path.sy + (path.ey - path.sy) * percent
+        # path: path
+    #   lenTo = lenFr +
+    point
+
+    # currPosition = pathGroup.length * percent
+    # lengthFr = 0
+    # lengthTo = 0
+    # lastX = 0
+    # lastY = 0
+    # for path, i in pathGroup.paths
+    #   if path.length
+    #     lengthTo = lengthFr + path.length
+    #   if lengthFr < currPosition and currPosition < lengthTo
+    #     percent = (currPosition - lengthFr) / (lengthTo - lengthFr)
+    #     break
+    #   lengthFr = lengthTo
+    #   lastX = path._x
+    #   lastY = path._y
+
+    # if path.cmd.toUpperCase() is 'C'
+    #   bezierPoint = bezier(percent,
+    #     { x: lastX, y: lastY },
+    #     { x: path._x1, y: path._y1 },
+    #     { x: path._x2, y: path._y2 },
+    #     { x: path._x, y: path._y }
+    #   )
+    #   point =
+    #     x: bezierPoint.x
+    #     y: bezierPoint.y
+    #     path: path
+    # else
+    #   point =
+    #     x: lastX + (path._x - lastX) * percent
+    #     y: lastY + (path._y - lastY) * percent
+    #     path: path
+    # point
+
+  width = 400
+  height = 400
+
+  nmapContainer = $element.find('.nmap-container').css({
+    width: width
+    height: height
+  })[0]
+
+
+  gmapContainer = $element.find('.gmap-container').css({
+    width: width
+    height: height
+  })[0]
+
+
+
+
+  centerPoint = new nhn.api.map.LatLng()
+
+  if nmapContainer
+
+    nmap = new nhn.api.map.Map(nmapContainer, {
+      zoom: 11
+      mapMode: 0
+    })
+
+  if gmapContainer
+
+    gmap = new google.maps.Map(gmapContainer, {
+      center: {lat: 0, lng: 0},
+      zoom: 18
+    })
+    gmap.setTilt 45
+      
+
+
   $scope.$watch 'vm.route', (route) ->
-    if route and route.summary
-
-      tl = getLatLng route.summary.bounds.left_top
-      br = getLatLng route.summary.bounds.right_bottom
-      # center = [(tl.x + br.x) / 2, (tl.y + br.y) / 2]
-
-      vm.nmapOptions =
-        center:
-          x: (tl.x + br.x) / 2, y: (tl.y + br.y) / 2
-        route:
-          from: getLatLng route.summary.start.location
-          to: getLatLng route.summary.end.location
-        paths: route.paths
-      # console.log center
-      # nhn.mapcore.CoordConverter.fromInnerToLatLng(new nhn.api.map.Inner(chunk[0], chunk[1]))
+    if route and route.paths
+      # canvas = $element.find('canvas')[0]
+      # ctx = canvas.getContext '2d'
+      # canvas.width = 1000
+      # console.log route.width, route.height
+      # canvas.height = parseInt(canvas.width / route.width * route.height, 10)
 
 
-      console.log route.summary
+      anim = $({
+        process: 0
+      }).animate({
+        process: 1
+      }, {
+        duration: 100000
+        easing: 'linear'
+        step: (now, fx) ->
+
+          point = findPoint route, now
+
+          centerPoint.x = point.x
+          centerPoint.y = point.y
+
+          # console.log centerPoint
+
+          if nmap
+
+            nmap.setCenter centerPoint, { useEffect: false, centerMark: true }
+          if gmap
+            # gmap.setCenter point.x, po
+            gmap.setCenter(new google.maps.LatLng(point.y, point.x))
+
+          # rt = canvas.width / route.width
+          # ctx.fillStyle = 'black'
+          # ctx.fillRect (point.x - route.min.x) * rt, (point.y - route.min.y) * rt, 5, 5
+          # console.log point.x * rt, point.y * rt
+
+          # console.log now, point
+      })
+
+      # tl = getLatLng route.summary.bounds.left_top
+      # br = getLatLng route.summary.bounds.right_bottom
+      # # center = [(tl.x + br.x) / 2, (tl.y + br.y) / 2]
+
+      # vm.nmapOptions =
+      #   center:
+      #     x: (tl.x + br.x) / 2, y: (tl.y + br.y) / 2
+      #   route:
+      #     from: getLatLng route.summary.start.location
+      #     to: getLatLng route.summary.end.location
+      #   paths: route.paths
+
+
+      # console.log route.summary
     return
 
   $scope.$watch 'vm.input.from._edit', (edit) ->

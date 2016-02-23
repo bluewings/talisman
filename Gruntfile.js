@@ -278,7 +278,7 @@ module.exports = function (grunt) {
           '<%= yeoman.client %>/assets/img/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
         ],
         options: {
-          livereload: 35289
+          livereload: 35299
         }
       }
     },
