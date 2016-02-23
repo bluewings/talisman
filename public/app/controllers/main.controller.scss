@@ -38,8 +38,15 @@
     }
 }
 
+.gmap-container {
+    transition: transform 1s linear;
+}
+
 .gmap-wrap {
     position: relative;
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
 
     .car {
         position: absolute;

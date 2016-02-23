@@ -138,6 +138,8 @@ angular.module 'scomp'
               if dist > 0
 
                 # route.paths.push [x1, y1, x2, y2, dist]
+                degree = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI - 90
+
 
                 route.paths.push 
                   sx: x1
@@ -147,6 +149,7 @@ angular.module 'scomp'
                   dist: dist
                   start: accumDist
                   end: accumDist + dist
+                  degree: degree
 
                 accumDist += dist
                   
@@ -274,6 +277,7 @@ angular.module 'scomp'
     point =
       x: path.sx + (path.ex - path.sx) * percent
       y: path.sy + (path.ey - path.sy) * percent
+      degree: path.degree
         # path: path
     #   lenTo = lenFr +
     point
@@ -369,6 +373,11 @@ angular.module 'scomp'
 
           centerPoint.x = point.x
           centerPoint.y = point.y
+
+          $(gmapContainer).css
+            transform: "rotate(#{point.degree}deg)"
+
+          
 
           # console.log centerPoint
 
