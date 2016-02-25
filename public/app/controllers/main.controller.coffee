@@ -29,7 +29,9 @@ angular.module 'scomp'
           chunk = point.split ','
           if chunk.length is 2
             latlng = nhn.mapcore.CoordConverter.fromInnerToLatLng(new nhn.api.map.Inner(chunk[0], chunk[1]))
-            paths.push [latlng.x, latlng.y]
+            paths.push [latlng.x, latlng.y, step.panorama]
+            # console.log step.panorama
+
       else if step.steps
         getPaths step.steps, paths
     paths
@@ -138,7 +140,7 @@ angular.module 'scomp'
               if dist > 0
 
                 # route.paths.push [x1, y1, x2, y2, dist]
-                degree = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI - 90
+                degree = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI - 90 + 90
 
 
                 route.paths.push 
@@ -150,6 +152,7 @@ angular.module 'scomp'
                   start: accumDist
                   end: accumDist + dist
                   degree: degree
+                  panorama: point[2]
 
                 accumDist += dist
                   
@@ -278,6 +281,7 @@ angular.module 'scomp'
       x: path.sx + (path.ex - path.sx) * percent
       y: path.sy + (path.ey - path.sy) * percent
       degree: path.degree
+      panorama: path.panorama
         # path: path
     #   lenTo = lenFr +
     point
@@ -330,6 +334,12 @@ angular.module 'scomp'
   })[0]
 
 
+  carContainer = $element.find('.car-container').css({
+    width: width
+    height: height
+  })
+
+  car = $element.find('.car img')
 
 
   centerPoint = new nhn.api.map.LatLng()
@@ -349,7 +359,7 @@ angular.module 'scomp'
     })
     gmap.setTilt 45
       
-
+  prevPanoId = null
 
   $scope.$watch 'vm.route', (route) ->
     if route and route.paths
@@ -377,9 +387,24 @@ angular.module 'scomp'
           $(gmapContainer).css
             transform: "rotate(#{point.degree}deg)"
 
-          
 
-          # console.log centerPoint
+          $(carContainer).css
+            transform: "rotate(#{point.degree}deg)"
+          $(car).css
+            transform: "rotate(#{-point.degree}deg)"
+
+          # $('#test1').html centerPoint.x + ' , ' + centerPoint.y
+
+          # # console.log centerPoint
+          # # http://map.naver.com/panorama/getPanorama.nhn?type=3&lat=37.2764946&lng=126.9702729&zoomlevel=11
+
+          # if prevPanoId isnt point.panorama.id
+          #   $('#testimg')[0].src = "http://pvimgl.map.naver.com/api/get?type=img&pano_id=#{point.panorama.id}&suffix=_P"
+          #   $('#test').html JSON.stringify(point.panorama, null, 2)
+
+          #   prevPanoId = point.panorama.id
+
+          # http://pvimgl.map.naver.com/api/get?type=img&pano_id=GQ1NvOS0gPHxjb7NBn79RA==&suffix=_P
 
           if nmap
 
